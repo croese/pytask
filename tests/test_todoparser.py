@@ -97,3 +97,15 @@ Email SoAndSo at soandso@example.com"""
 
         assert tasks[0].contexts == {"iphone", "phone"}
         assert len(tasks[1].contexts) == 0
+
+    def test_it_parses_projects(self):
+        f = StringIO(
+            """(A) Call Mom +Family +PeaceLoveAndHappiness @iphone @phone
+Learn how to add 2+2"""
+        )
+
+        p = TodoParser(f)
+        tasks = p.parse()
+
+        assert tasks[0].projects == {"Family", "PeaceLoveAndHappiness"}
+        assert len(tasks[1].contexts) == 0

@@ -10,14 +10,15 @@ TASK_PREFIX_MATCHER = re.compile(
 )
 
 CONTEXT_MATCHER = re.compile(r" @(\S+)")
+PROJECT_MATCHER = re.compile(r" \+(\S+)")
 
 
 class TodoParser:
     def __init__(self, stream):
         self._stream = stream
 
-    def extract_contexts(self, line):
-        matches = CONTEXT_MATCHER.findall(line)
+    def extract_tags(self, tag_pattern, line):
+        matches = tag_pattern.findall(line)
         return set(matches)
 
     def parse(self) -> List[Task]:
@@ -37,7 +38,8 @@ class TodoParser:
                     created = date.fromisoformat(m.group("created"))
                 line = line[m.end(0) :]
 
-            contexts = self.extract_contexts(line)
+            contexts = self.extract_tags(CONTEXT_MATCHER, line)
+            projects = self.extract_tags(PROJECT_MATCHER, line)
 
             tasks.append(
                 Task(
@@ -46,6 +48,7 @@ class TodoParser:
                     is_done=done,
                     created_date=created,
                     contexts=contexts,
+                    projects=projects,
                 )
             )
 
