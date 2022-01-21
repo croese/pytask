@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Set
+from typing import Dict, Set
 
 
 class Task:
@@ -11,6 +11,8 @@ class Task:
         created_date: date = date.today(),
         contexts: Set[str] = set(),
         projects: Set[str] = set(),
+        completed_date: date = None,
+        custom_metadata: Dict[str, str] = {},
     ):
         self.description = description
         self.priority = priority
@@ -18,3 +20,5 @@ class Task:
         self.created_date = created_date
         self.contexts = contexts
         self.projects = projects
+        self.completed_date = completed_date
+        self.custom_metadata = custom_metadata

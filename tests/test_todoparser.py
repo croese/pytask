@@ -50,11 +50,10 @@ Put up (B) sign
 
     def test_it_parses_complete_tasks(self):
         f = StringIO(
-            """x Call Mom
+            """x 2011-03-03 Call Mom
 xylophone lesson
 X 2012-01-01 Make resolutions
-(A) x Find ticket prices
-x (B) Do stuff"""
+(A) x Find ticket prices"""
         )
 
         p = TodoParser(f)
@@ -65,14 +64,11 @@ x (B) Do stuff"""
         assert not tasks[1].is_done
         assert not tasks[2].is_done
         assert not tasks[3].is_done
-        assert tasks[4].is_done
-        assert tasks[4].priority == "B"
 
-    def test_it_parses_creation_date(self):
+    def test_it_parses_creation_date_correctly(self):
         f = StringIO(
             """2011-03-02 Document task format
 (A) 2015-07-16 Call Mom
-x (C) 2021-01-21 Call Mom
 (B) Call Mom 2011-03-02"""
         )
 
@@ -82,9 +78,8 @@ x (C) 2021-01-21 Call Mom
         assert tasks[0].created_date == date.fromisoformat("2011-03-02")
         assert tasks[0].description == "Document task format"
         assert tasks[1].created_date == date.fromisoformat("2015-07-16")
-        assert tasks[2].created_date == date.fromisoformat("2021-01-21")
-        assert tasks[3].created_date == None
-        assert tasks[3].description == "Call Mom 2011-03-02"
+        assert tasks[2].created_date == None
+        assert tasks[2].description == "Call Mom 2011-03-02"
 
     def test_it_parses_contexts(self):
         f = StringIO(
@@ -109,3 +104,27 @@ Learn how to add 2+2"""
 
         assert tasks[0].projects == {"Family", "PeaceLoveAndHappiness"}
         assert len(tasks[1].contexts) == 0
+
+    def test_it_parses_completion_date(self):
+        f = StringIO(
+            """x 2011-03-02 2011-03-01 Has completion date and created date
+x 2011-03-02 Has completion date and no created date"""
+        )
+
+        p = TodoParser(f)
+        tasks = p.parse()
+
+        assert tasks[0].is_done
+        assert tasks[0].completed_date == date.fromisoformat("2011-03-02")
+        assert tasks[0].created_date == date.fromisoformat("2011-03-01")
+        assert tasks[1].is_done
+        assert tasks[1].completed_date == date.fromisoformat("2011-03-02")
+        assert tasks[1].created_date is None
+
+    def test_it_parses_custom_metadata(self):
+        f = StringIO("My test task due:2010-01-02")
+
+        p = TodoParser(f)
+        tasks = p.parse()
+
+        assert tasks[0].custom_metadata == {"due": "2010-01-02"}
