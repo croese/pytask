@@ -1,5 +1,6 @@
 from pytask.core.todoparser import TodoParser
 from io import StringIO
+from datetime import date
 
 
 class TestTodoParser:
@@ -49,7 +50,7 @@ Put up (B) sign
 
     def test_it_parses_complete_tasks(self):
         f = StringIO(
-            """x 2011-03-03 Call Mom
+            """x Call Mom
 xylophone lesson
 X 2012-01-01 Make resolutions
 (A) x Find ticket prices
@@ -60,8 +61,27 @@ x (B) Do stuff"""
         tasks = p.parse()
 
         assert tasks[0].is_done
+        assert tasks[0].description == "Call Mom"
         assert not tasks[1].is_done
         assert not tasks[2].is_done
         assert not tasks[3].is_done
         assert tasks[4].is_done
         assert tasks[4].priority == "B"
+
+    def test_it_parses_creation_date(self):
+        f = StringIO(
+            """2011-03-02 Document task format
+(A) 2015-07-16 Call Mom
+x (C) 2021-01-21 Call Mom
+(B) Call Mom 2011-03-02"""
+        )
+
+        p = TodoParser(f)
+        tasks = p.parse()
+
+        assert tasks[0].created_date == date.fromisoformat("2011-03-02")
+        assert tasks[0].description == "Document task format"
+        assert tasks[1].created_date == date.fromisoformat("2015-07-16")
+        assert tasks[2].created_date == date.fromisoformat("2021-01-21")
+        assert tasks[3].created_date == None
+        assert tasks[3].description == "Call Mom 2011-03-02"
