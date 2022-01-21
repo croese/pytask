@@ -85,3 +85,15 @@ x (C) 2021-01-21 Call Mom
         assert tasks[2].created_date == date.fromisoformat("2021-01-21")
         assert tasks[3].created_date == None
         assert tasks[3].description == "Call Mom 2011-03-02"
+
+    def test_it_parses_contexts(self):
+        f = StringIO(
+            """(A) Call Mom +Family +PeaceLoveAndHappiness @iphone @phone
+Email SoAndSo at soandso@example.com"""
+        )
+
+        p = TodoParser(f)
+        tasks = p.parse()
+
+        assert tasks[0].contexts == {"iphone", "phone"}
+        assert len(tasks[1].contexts) == 0

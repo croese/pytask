@@ -4,17 +4,21 @@ from .task import Task
 import re
 from datetime import date
 
-PRIORITY_MATCHER = re.compile(r"\(([A-Z])\) ")
-CREATED_MATCHER = re.compile(r"(\d{4}-\d{2}-\d{2}) ")
 
 TASK_PREFIX_MATCHER = re.compile(
     r"(?P<done>x )?(\((?P<pri>[A-Z])\) )?((?P<created>\d{4}-\d{2}-\d{2}) )?"
 )
 
+CONTEXT_MATCHER = re.compile(r" @(\S+)")
+
 
 class TodoParser:
     def __init__(self, stream):
         self._stream = stream
+
+    def extract_contexts(self, line):
+        matches = CONTEXT_MATCHER.findall(line)
+        return set(matches)
 
     def parse(self) -> List[Task]:
         tasks = []
@@ -33,12 +37,15 @@ class TodoParser:
                     created = date.fromisoformat(m.group("created"))
                 line = line[m.end(0) :]
 
+            contexts = self.extract_contexts(line)
+
             tasks.append(
                 Task(
                     description=line,
                     priority=priority,
                     is_done=done,
                     created_date=created,
+                    contexts=contexts,
                 )
             )
 
